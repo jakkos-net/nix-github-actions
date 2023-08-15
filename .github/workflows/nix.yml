@@ -59,6 +59,10 @@ jobs:
       - name: build 
         # nix build would also work here because `todos` is the default package
         run: nix build
+      - uses: actions/upload-artifact@v3
+        with:
+          name: my-artifact
+          path: result/bin/
       - name: release
         uses: softprops/action-gh-release@v1
         if: startsWith(github.ref, 'refs/tags/')
