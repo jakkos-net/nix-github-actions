@@ -62,7 +62,7 @@
             pname = name;
             inherit version;
             src = ./.;
-            cargoSha256 = "sha256-nLnEn3jcSO4ChsXuCq0AwQCrq/0KWvw/xWK1s79+zBs=";
+            cargoSha256 = "sha256-EzVn+486AQ0KVsWyS8T8/c4ZZZsFu+HowTSyCEQMLQY=";
             release = true;
           };
         };
