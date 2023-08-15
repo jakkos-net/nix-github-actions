@@ -1,19 +1,12 @@
 # Our desired pipeline using only a Nix shell environment
-name: Check and build the TODOs API (Nix)
+name: check test build release
 
 on:
-  push:
-    branches:
-      - main
-    tags:
-      - "v*.*.*"
-  pull_request:
-    branches:
-      - main
+  workflow_dispatch:
 
 jobs:
-  check_nix:
-    name: Check TODOs API
+  check:
+    name: check
     runs-on: ubuntu-22.04
     steps:
       - name: git checkout
@@ -35,21 +28,10 @@ jobs:
         run: |
           nix develop --command \
             cargo-deny check
-      - name: editorconfig check
-        run: |
-          nix develop --command \
-            eclint \
-              -exclude "Cargo.lock"
-      - name: Check spelling
-        run: |
-          nix develop --command \
-            codespell \
-              --skip target,.git \
-              --ignore-words-list crate
 
-  build_and_test_nix:
-    name: Test and build TODOs API
-    needs: check_nix
+  test_build_release:
+    name: test, build, release
+    needs: check
     strategy:
       matrix:
         os: [ubuntu-22.04, macos-12]
@@ -69,20 +51,16 @@ jobs:
             ~/.cargo/registry/cache/
             ~/.cargo/git/db/
             target/
-          key: todos-app-${{ hashFiles('**/Cargo.lock') }}
-      - name: Test TODOs API
+          key: test-prog-${{ hashFiles('**/Cargo.lock') }}
+      - name: cargo test
         run: |
           nix develop --command \
             cargo test
-      - name: Build TODOs API
+      - name: build 
         # nix build would also work here because `todos` is the default package
-        run: nix build .#todos
-
-      # I don't talk about this in the blog post so consider it an Easter egg.
-      # You can indeed use Nix to build Docker containers without any need for
-      # a Dockerfile. For more info, see:
-      # https://nix.dev/tutorials/building-and-running-docker-images
-      # https://github.com/the-nix-way/nix-docker-examples/
-      # https://github.com/NixOS/nixpkgs/blob/master/pkgs/build-support/docker/examples.nix
-      - name: Build TODOs Docker image
-        run: nix build .#docker
+        run: nix build
+      - name: release
+        uses: softprops/action-gh-release@v1
+        if: startsWith(github.ref, 'refs/tags/')
+        with:
+          files: README.md
