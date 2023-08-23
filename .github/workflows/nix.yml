@@ -61,7 +61,7 @@ jobs:
         run: nix build
       - uses: actions/upload-artifact@v3
         with:
-          name: my-artifact
+          name: ${{ matrix.os }}_build
           path: result/bin/
       - name: release
         uses: softprops/action-gh-release@v1
